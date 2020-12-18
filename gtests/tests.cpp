@@ -1,5 +1,11 @@
+#include <iostream>
+#include <random>
 #include <gtest/gtest.h>
-#include "grammar_src/grammar.h"
+#include "grammar_src/grammar.cpp"
+#include "Earley_algo_src/algo.cpp"
+#include <stack>
+
+std::mt19937 rnd;
 
 TEST(RuleTest, parserTest) {
     auto q = parseRules("T->1|fkf|fEf");
@@ -123,4 +129,58 @@ TEST(GrammarTest, eraseTest) {
     EXPECT_EQ(g.size(), 4);
     g.eraseRule(g.begin('G'));
     EXPECT_EQ(g.size(), 4);
+}
+
+bool isPsP(const std::string &s) {
+    std::stack<char> q;
+    for (char c : s) {
+        if (c == 'a') {
+            q.push(c);
+        } else {
+            if (q.empty() || q.top() != 'a') {
+                return false;
+            }
+            q.pop();
+        }
+    }
+    return q.empty();
+}
+
+TEST(EarleyTest, simpleTest) {
+    Grammar g;
+    g.addRule("S->aSbS|");
+    EarleyAlgo solver(g);
+    ASSERT_TRUE(solver.hasWord("ab"));
+    ASSERT_TRUE(solver.hasWord("abaabb"));
+    ASSERT_FALSE(solver.hasWord("a"));
+    for (int iter = 0; iter < 100; ++iter) {
+        int len = 1 + rnd() % 5;
+        std::string s;
+        for (int i = 0; i < len; ++i) {
+            s += 'a' + (rnd() % 2);
+        }
+        EXPECT_EQ(solver.hasWord(s), isPsP(s));
+    }
+}
+
+TEST(EarleyTest, notSimpleTest) {
+    Grammar g;
+    g.addRule("S->SS|aSb|");
+    EarleyAlgo solver(g);
+    ASSERT_TRUE(solver.hasWord("ab"));
+    ASSERT_TRUE(solver.hasWord("abaabb"));
+    ASSERT_FALSE(solver.hasWord("a"));
+    for (int iter = 0; iter < 100; ++iter) {
+        int len = 1 + rnd() % 5;
+        std::string s;
+        for (int i = 0; i < len; ++i) {
+            s += 'a' + (rnd() % 2);
+        }
+        EXPECT_EQ(solver.hasWord(s), isPsP(s));
+    }
+}
+
+int main(int argc, char* argv[]) {
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }

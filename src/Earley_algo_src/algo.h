@@ -18,7 +18,6 @@ class EarleyAlgo {
 
     std::vector<std::set<state>> levels;
     Grammar grammar_;
-    std::string currentWord_;
 
     using stateIterator = std::set<state>::iterator;
 
