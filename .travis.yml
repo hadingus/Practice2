@@ -1,0 +1,38 @@
+language: cpp
+
+install:
+  - sudo pip install codecov
+  - sudo apt-get install -y cmake
+  - sudo apt-get install -y libgtest-dev
+  - mkdir build_gtest
+  - cd build_gtest
+  - cmake /usr/src/gtest
+  - sudo make
+  - sudo cp libgtest* /usr/lib
+  - cd ..
+
+
+script:
+  - export CC=gcc-7
+  - export CXX=g++-7
+  - mkdir build
+  - cd build
+  - cmake ..
+  - make
+  - ./Tests
+
+addons:
+  apt:
+    packages:
+      - lcov
+      - g++-7
+    sources:
+      - ubuntu-toolchain-r-test
+
+after_success:
+  # Create lcov report
+  - lcov --capture --directory ./CMakeFiles/Tests.dir/ --output-file coverage.info
+  - lcov --remove coverage.info '/usr/*' --output-file coverage.info # filter system-files
+  - lcov --list coverage.info # debug info
+  # Uploading report to CodeCov
+  - bash <(curl -s https://codecov.io/bash) -t $codecov_token  -f coverage.info || echo "Codecov did not collect coverage reports"
