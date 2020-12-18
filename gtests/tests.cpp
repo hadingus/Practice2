@@ -58,8 +58,6 @@ TEST(GrammarTest, addRuleTest) {
 TEST(GrammarTest, startTest) {
     Grammar g('T');
     EXPECT_EQ(g.getStart(), 'T');
-    g.setStart('A');
-    EXPECT_EQ(g.getStart(), 'A');
     Grammar k;
     EXPECT_EQ(k.getStart(), 'S');
 }

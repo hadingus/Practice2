@@ -104,6 +104,3 @@ char Grammar::getStart() const {
     return start_;
 }
 
-void Grammar::setStart(char newStart) {
-    start_ = newStart;
-}

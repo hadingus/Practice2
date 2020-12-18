@@ -25,7 +25,6 @@ public:
     Grammar& operator=(const Grammar &other);
     Grammar& operator=(Grammar &&other);
 
-    void setStart(char newStart);
     char getStart() const;
     bool addRule(const std::string &rule);
     unsigned int size() const;
