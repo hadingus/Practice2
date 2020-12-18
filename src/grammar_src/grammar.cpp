@@ -73,6 +73,13 @@ unsigned int Grammar::size() const {
     return size_;
 }
 
+unsigned int Grammar::size(char c) const {
+    if (isNonTerminal(c)) {
+        return rules_[c - 'A'].size();
+    }
+    return 0;
+}
+
 void Grammar::deleteSimilarRules() {
     size_ = 0;
     std::set<std::string> single_rules;
@@ -89,14 +96,6 @@ void Grammar::deleteSimilarRules() {
 }
 
 Grammar::Grammar(const Grammar &other): rules_(other.rules_), start_(other.start_), size_(other.size_) {}
-Grammar::Grammar(Grammar &&other): rules_(std::move(other.rules_)), start_(other.start_), size_(other.size_) {}
-
-Grammar & Grammar::operator=(Grammar &&other) {
-    start_ = other.start_;
-    size_ = other.size_;
-    rules_ = std::move(other.rules_);
-    return *this;
-}
 
 Grammar& Grammar::operator=(const Grammar &other) {
     start_ = other.start_;
@@ -137,7 +136,7 @@ std::istream& operator >>(std::istream& stream, Grammar &g) {
 
 template<bool isConst>
 bool Grammar::Iterator_<isConst>::isValid() const {
-    return ruleId_ >= 0 && ruleId_ < (*ptr_)[charId_].size();
+    return charId_ < maxCharId && charId_ >= 0 && ruleId_ >= 0 && ruleId_ < (*ptr_)[charId_].size();
 }
 
 template<bool isConst>
@@ -231,7 +230,11 @@ Grammar::ConstIterator Grammar::end() const {
 
 Grammar::Iterator Grammar::begin(char c) {
     int id = c - 'A';
-    return Iterator(&rules_, id, 0);
+    auto res = Iterator(&rules_, id, 0);
+    if (!res.isValid()) {
+        ++res;
+    }
+    return res;
 }
 
 Grammar::Iterator Grammar::end(char c) {
@@ -242,8 +245,11 @@ Grammar::Iterator Grammar::end(char c) {
 
 Grammar::ConstIterator Grammar::begin(char c) const {
     int id = c - 'A';
-    auto cur = &rules_;
-    return ConstIterator(cur, id, 0);
+    auto res = ConstIterator(&rules_, id, 0);
+    if (!res.isValid()) {
+        ++res;
+    }
+    return res;
 }
 
 Grammar::ConstIterator Grammar::end(char c) const {

@@ -8,10 +8,6 @@ bool EarleyAlgo::state::operator==(const state &other) const {
     return rule == other.rule && rulePos == other.rulePos && strPos == other.strPos;
 }
 
-bool EarleyAlgo::state::operator!=(const state &other) const {
-    return !(*this == other);
-}
-
 bool EarleyAlgo::state::operator<(const state &other) const {
     if (rulePos != other.rulePos) {
         return rulePos < other.rulePos;
@@ -35,6 +31,7 @@ bool EarleyAlgo::predict(stateIterator it, int levelId) {
     if (it->rulePos < it->rule.size() && isNonTerminal(it->rule[it->rulePos])) {
         char nonTerm = it->rule[it->rulePos];
         std::vector<state> new_states;
+
         for (auto nxt_it = grammar_.begin(nonTerm); nxt_it != grammar_.end(nonTerm); ++nxt_it) {
             new_states.emplace_back(*nxt_it, 3, levelId);
         }

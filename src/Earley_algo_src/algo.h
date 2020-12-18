@@ -12,7 +12,6 @@ class EarleyAlgo {
 
         state(const std::string &rule, int rulePos, int strPos);
         bool operator==(const state &other) const;
-        bool operator!=(const state &other) const;
         bool operator<(const state &other) const;
     };
 

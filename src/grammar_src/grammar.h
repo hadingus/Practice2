@@ -13,7 +13,7 @@ bool isNonTerminal(char c);
 bool isSymbol(char c);
 
 class Grammar {
-    static const int maxCharId = 27;
+    static const int maxCharId = 26;
     int size_;
     char start_;
     std::vector<std::vector<std::string>> rules_;
@@ -49,13 +49,12 @@ class Grammar {
 public:
     Grammar(char start = 'S');
     Grammar(const Grammar &other);
-    Grammar(Grammar &&other);
     Grammar& operator=(const Grammar &other);
-    Grammar& operator=(Grammar &&other);
 
     char getStart() const;
     bool addRule(const std::string &rule);
     unsigned int size() const;
+    unsigned int size(char c) const;
     void deleteSimilarRules();
 
     using Iterator = Iterator_<false>;

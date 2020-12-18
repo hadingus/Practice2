@@ -64,6 +64,13 @@ TEST(GrammarTest, addRuleTest) {
     EXPECT_EQ(g.size(), 4);
 }
 
+TEST(GrammarTest, sizeTest) {
+    Grammar g;
+    EXPECT_EQ(g.size('S'), 0);
+    g.addRule("S->sfwS|SS|a");
+    EXPECT_EQ(g.size('S'), 3);
+}
+
 TEST(GrammarTest, startTest) {
     Grammar g('T');
     EXPECT_EQ(g.getStart(), 'T');
@@ -120,6 +127,19 @@ TEST(GrammarTest, iteratorTest) {
     EXPECT_EQ(*it, "A->");
 }
 
+TEST(GrammarTest, operatorTest) {
+    Grammar g;
+    g.addRule("T->g|1|gfdF");
+    g.addRule("A->1");
+    g.addRule("Z->1");
+    Grammar p;
+    p = g;
+    EXPECT_EQ(p.size('T'), 3);
+    EXPECT_EQ(p.size('A'), 1);
+    EXPECT_EQ(p.size('S'), 0);
+    EXPECT_EQ(p.size('q'), 0);
+}
+
 TEST(GrammarTest, eraseTest) {
     Grammar g;
     g.addRule("T->g|1|gfdF");
@@ -128,7 +148,26 @@ TEST(GrammarTest, eraseTest) {
     g.eraseRule(g.begin('T'));
     EXPECT_EQ(g.size(), 4);
     g.eraseRule(g.begin('G'));
-    EXPECT_EQ(g.size(), 4);
+    EXPECT_EQ(g.size(), 3);
+    g.addRule("G->A|gf|rs");
+    EXPECT_EQ(g.eraseRule(g.end()), g.end());
+}
+
+TEST(GrammarTest, constIterTest) {
+    Grammar g;
+    g.addRule("S->aSbSS|1");
+    const Grammar &s = g;
+    int id = 0;
+    for (auto i : s) {
+        ++id;
+    }
+    EXPECT_EQ(id, 2);
+    g.addRule("A->sfs|fds");
+    id = 0;
+    for (auto it = s.begin('A'); it != s.end('A'); ++it) {
+        ++id;
+    }
+    EXPECT_EQ(id, 2);
 }
 
 bool isPsP(const std::string &s) {
@@ -146,6 +185,18 @@ bool isPsP(const std::string &s) {
     return q.empty();
 }
 
+TEST(EarleyTest, initTest) {
+    EarleyAlgo solver;
+    for (int iter = 0; iter < 100; ++iter) {
+        int len = 1 + rnd() % 100;
+        std::string s;
+        for (int i = 0; i < len; ++i) {
+            s += 'a' + (rnd() % 2);
+        }
+        EXPECT_FALSE(solver.hasWord(s));
+    }
+}
+
 TEST(EarleyTest, simpleTest) {
     Grammar g;
     g.addRule("S->aSbS|");
@@ -154,7 +205,7 @@ TEST(EarleyTest, simpleTest) {
     ASSERT_TRUE(solver.hasWord("abaabb"));
     ASSERT_FALSE(solver.hasWord("a"));
     for (int iter = 0; iter < 100; ++iter) {
-        int len = 1 + rnd() % 5;
+        int len = 1 + rnd() % 100;
         std::string s;
         for (int i = 0; i < len; ++i) {
             s += 'a' + (rnd() % 2);
@@ -171,7 +222,7 @@ TEST(EarleyTest, notSimpleTest) {
     ASSERT_TRUE(solver.hasWord("abaabb"));
     ASSERT_FALSE(solver.hasWord("a"));
     for (int iter = 0; iter < 100; ++iter) {
-        int len = 1 + rnd() % 5;
+        int len = 1 + rnd() % 100;
         std::string s;
         for (int i = 0; i < len; ++i) {
             s += 'a' + (rnd() % 2);
