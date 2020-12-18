@@ -1,57 +1,60 @@
 #include <gtest/gtest.h>
 #include "grammar_src/grammar.h"
 
-TEST(RuleVerifierTest, parserTest) {
-    auto q = RuleVerifier::parseRules("T->1|fkf|fEf");
+TEST(RuleTest, parserTest) {
+    auto q = parseRules("T->1|fkf|fEf");
     EXPECT_EQ(q.size(), 3);
-    EXPECT_EQ(q[0], "T->1");
-    EXPECT_EQ(q[1], "T->fkf");
-    EXPECT_EQ(q[2], "T->fEf");
+    std::vector<std::string> res = {"T->1", "T->fkf", "T->fEf"};
+    int id = 0;
+    for (const auto& it : q) {
+        EXPECT_EQ(it, res[id++]);
+    }
 }
 
-TEST(RuleVerifierTest, CharTest) {
-    EXPECT_EQ(RuleVerifier::isSymbol('a'), true);
-    EXPECT_EQ(RuleVerifier::isSymbol('3'), false);
+TEST(RuleTest, CharTest) {
+    ASSERT_TRUE(isSymbol('a'));
+    ASSERT_FALSE(isSymbol('3'));
+    ASSERT_FALSE(isSymbol('A'));
 }
 
-TEST(RuleVerifierTest, NonTerminalTest) {
-    EXPECT_EQ(RuleVerifier::isNonTerminal('A'), true);
-    EXPECT_EQ(RuleVerifier::isNonTerminal('2'), false);
-    EXPECT_EQ(RuleVerifier::isNonTerminal('v'), false);
-    EXPECT_EQ(RuleVerifier::isNonTerminal('F'), true);
+TEST(RuleTest, NonTerminalTest) {
+    ASSERT_TRUE(isNonTerminal('A'));
+    ASSERT_FALSE(isNonTerminal('2'));
+    ASSERT_FALSE(isNonTerminal('v'));
+    ASSERT_TRUE(isNonTerminal('F'));
 }
 
-TEST(RuleVerifierTest, SingleRuleTest) {
-    EXPECT_EQ(RuleVerifier::isValidSingleRule("agfeg"), false);
-    EXPECT_EQ(RuleVerifier::isValidSingleRule("Alffmv"), false);
-    EXPECT_EQ(RuleVerifier::isValidSingleRule("a->frefgf"), false);
-    EXPECT_EQ(RuleVerifier::isValidSingleRule("A->"), false);
-    EXPECT_EQ(RuleVerifier::isValidSingleRule("A->flkrk"), true);
-    EXPECT_EQ(RuleVerifier::isValidSingleRule("A->1"), true);
-    EXPECT_EQ(RuleVerifier::isValidSingleRule("A->1flgkmek"), false);
-    EXPECT_EQ(RuleVerifier::isValidSingleRule("B-rgfr"), false);
-    EXPECT_EQ(RuleVerifier::isValidSingleRule("A->32f3krg"), false);
-    EXPECT_EQ(RuleVerifier::isValidSingleRule("A->egfr|kfre"), false);
-    EXPECT_EQ(RuleVerifier::isValidSingleRule("A->rkgrAflkgnvrfAGkr"), true);
+TEST(RuleTest, SingleRuleTest) {
+    ASSERT_FALSE(isValidSingleRule("agfeg"));
+    ASSERT_FALSE(isValidSingleRule("Alffmv"));
+    ASSERT_FALSE(isValidSingleRule("a->frefgf"));
+    ASSERT_FALSE(isValidSingleRule("A->"));
+    ASSERT_TRUE(isValidSingleRule("A->flkrk"));
+    ASSERT_TRUE(isValidSingleRule("A->1"));
+    ASSERT_FALSE(isValidSingleRule("A->1flgkmek"));
+    ASSERT_FALSE(isValidSingleRule("B-rgfr"));
+    ASSERT_FALSE(isValidSingleRule("A->32f3krg"));
+    ASSERT_FALSE(isValidSingleRule("A->egfr|kfre"));
+    ASSERT_TRUE(isValidSingleRule("A->rkgrAflkgnvrfAGkr"));
 }
 
-TEST(RuleVerifierTest, RuleTest) {
-    EXPECT_EQ(RuleVerifier::isValidRule("A->||"), false);
-    EXPECT_EQ(RuleVerifier::isValidRule("A->1|efglr|1"), true);
-    EXPECT_EQ(RuleVerifier::isValidRule("a->fek"), false);
-    EXPECT_EQ(RuleVerifier::isValidRule("A->fgF|fl|1"), true);
-    EXPECT_EQ(RuleVerifier::isValidRule("A->423|e"), false);
-    EXPECT_EQ(RuleVerifier::isValidRule("A->gkrdasFAF|fr2"), false);
-    EXPECT_EQ(RuleVerifier::isValidRule("G->1|feFdfsgAF|fr"), true);
+TEST(RuleTest, RuleTest) {
+    ASSERT_FALSE(isValidRule("A->||"));
+    ASSERT_TRUE(isValidRule("A->1|efglr|1"));
+    ASSERT_FALSE(isValidRule("a->fek"));
+    ASSERT_TRUE(isValidRule("A->fgF|fl|1"));
+    ASSERT_FALSE(isValidRule("A->423|e"));
+    ASSERT_FALSE(isValidRule("A->gkrdasFAF|fr2"));
+    ASSERT_TRUE(isValidRule("G->1|feFdfsgAF|fr"));
 }
 
 TEST(GrammarTest, addRuleTest) {
     Grammar g;
-    EXPECT_EQ(g.addRule("fefgm"), false);
+    ASSERT_FALSE(g.addRule("fefgm"));
     EXPECT_EQ(g.size(), 0);
-    EXPECT_EQ(g.addRule("T->1"), true);
+    ASSERT_TRUE(g.addRule("T->1"));
     EXPECT_EQ(g.size(), 1);
-    EXPECT_EQ(g.addRule("T->1|fegF|frF"), true);
+    ASSERT_TRUE(g.addRule("T->1|fegF|frF"));
     EXPECT_EQ(g.size(), 4);
 }
 
@@ -92,10 +95,3 @@ TEST(GrammarTest, deleterTest) {
     EXPECT_EQ(g.size(), 4);
 }
 
-TEST(GrammarTest, operatorTest) {
-    Grammar g;
-    g.addRule("T->f|fked|fkdgmkNFF");
-    EXPECT_EQ(g[0], "T->f");
-    EXPECT_EQ(g[1], "T->fked");
-    EXPECT_EQ(g[2], "T->fkdgmkNFF");
-}

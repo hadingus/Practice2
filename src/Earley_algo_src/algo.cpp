@@ -1,5 +1,5 @@
 #include "algo.h"
 
-void ff() {
-    std::cout << "I`m ready to work\n";
-}
+EarleyAlgo::EarleyAlgo(Grammar grammar): grammar_(grammar) {}
+EarleyAlgo::EarleyAlgo() {}
+

@@ -1,16 +1,16 @@
 #include "grammar.h"
 
-Grammar::Grammar(char start): start_(start) {}
+Grammar::Grammar(char start): start_(start), rules_(maxCharId), size_(0) {}
 
-bool RuleVerifier::isNonTerminal(char c) {
+bool isNonTerminal(char c) {
     return c >= 'A' && c <= 'Z';
 }
 
-bool RuleVerifier::isSymbol(char c) {
+bool isSymbol(char c) {
     return c >= 'a' && c <= 'z';
 }
 
-std::vector<std::string> RuleVerifier::parseRules(const std::string &rule) {
+std::vector<std::string> parseRules(const std::string &rule) {
     std::string start = rule.substr(0, 3);
     std::vector<std::string> rulesArr;
     std::string curRule = start;
@@ -26,7 +26,7 @@ std::vector<std::string> RuleVerifier::parseRules(const std::string &rule) {
     return rulesArr;
 }
 
-bool RuleVerifier::isValidSingleRule(const std::string &rule) {
+bool isValidSingleRule(const std::string &rule) {
     bool good = rule.size() > 3 && isNonTerminal(rule[0]) && rule[1] == '-' && rule[2] == '>';
     if (good && rule.size() == 4 && rule.back() == '1') {
         return true;
@@ -37,7 +37,7 @@ bool RuleVerifier::isValidSingleRule(const std::string &rule) {
     return good;
 }
 
-bool RuleVerifier::isValidRule(const std::string &rule) {
+bool isValidRule(const std::string &rule) {
     bool good = rule.size() > 3 && isNonTerminal(rule[0]) && rule[1] == '-' && rule[2] == '>';
     if (!good) {
         return false;
@@ -52,10 +52,11 @@ bool RuleVerifier::isValidRule(const std::string &rule) {
 }
 
 bool Grammar::addRule(const std::string &rule) {
-    if (RuleVerifier::isValidRule(rule)) {
-        auto rulesPack = RuleVerifier::parseRules(rule);
+    if (isValidRule(rule)) {
+        auto rulesPack = parseRules(rule);
         for (const auto& sRule : rulesPack) {
-            rules_.push_back(sRule);
+            rules_[sRule[0] - 'A'].push_back(sRule);
+            ++size_;
         }
         return true;
     }
@@ -63,39 +64,37 @@ bool Grammar::addRule(const std::string &rule) {
 }
 
 unsigned int Grammar::size() const {
-    return rules_.size();
+    return size_;
 }
 
 void Grammar::deleteSimilarRules() {
+    size_ = 0;
     std::set<std::string> single_rules;
-    for (const auto& rule : rules_) {
+    for (const auto& rule : *this) {
         single_rules.insert(rule);
     }
-    rules_.clear();
+    for (int i = 0; i < maxCharId; ++i) {
+        rules_[i].clear();
+    }
     for (const auto& rule : single_rules) {
-        rules_.push_back(rule);
+        rules_[rule[0] - 'A'].push_back(rule);
+        ++size_;
     }
 }
 
-std::string& Grammar::operator[](int id) {
-    return rules_[id];
-}
-
-const std::string & Grammar::operator[](int id) const {
-    return rules_[id];
-}
-
-Grammar::Grammar(const Grammar &other): rules_(other.rules_), start_(other.start_) {}
-Grammar::Grammar(Grammar &&other): rules_(std::move(other.rules_)), start_(other.start_) {}
+Grammar::Grammar(const Grammar &other): rules_(other.rules_), start_(other.start_), size_(other.size_) {}
+Grammar::Grammar(Grammar &&other): rules_(std::move(other.rules_)), start_(other.start_), size_(other.size_) {}
 
 Grammar & Grammar::operator=(Grammar &&other) {
     start_ = other.start_;
+    size_ = other.size_;
     rules_ = std::move(other.rules_);
     return *this;
 }
 
 Grammar& Grammar::operator=(const Grammar &other) {
     start_ = other.start_;
+    size_ = other.size_;
     rules_ = other.rules_;
     return *this;
 }
@@ -107,12 +106,14 @@ char Grammar::getStart() const {
 std::ostream& operator <<(std::ostream &stream, const Grammar &g) {
     int sz = g.size();
     stream << sz << "\n";
+    auto it = g.begin();
     for (int i = 0; i < sz; ++i) {
         if (i + 1 != sz) {
-            stream << g[i] << "\n";
+            stream << *it << "\n";
         } else {
-            stream << g[i];
+            stream << *it;
         }
+        ++it;
     }
     return stream;
 }
@@ -126,4 +127,133 @@ std::istream& operator >>(std::istream& stream, Grammar &g) {
         g.addRule(rule);
     }
     return stream;
+}
+
+template<bool isConst>
+bool Grammar::Iterator_<isConst>::isValid() const {
+    return ruleId_ >= 0 && ruleId_ < (*ptr_)[charId_].size();
+}
+
+template<bool isConst>
+Grammar::Iterator_<isConst>::Iterator_(ptrType ptr, int charId, int ruleId): charId_(charId),
+                                                                                        ruleId_(ruleId), ptr_(ptr) {}
+
+template<bool isConst>
+Grammar::Iterator_<isConst>::Iterator_(const Iterator_ &other): charId_(other.charId_), ruleId_(other.ruleId_),
+                                                                                        ptr_(other.ptr_) {}
+
+template<bool isConst>
+Grammar::Iterator_<isConst> & Grammar::Iterator_<isConst>::operator=(const Iterator_ &other) {
+    ruleId_ = other.ruleId_;
+    ptr_ = other.ptr_;
+    charId_ = other.charId_;
+}
+
+template<bool isConst>
+Grammar::Iterator_<isConst>& Grammar::Iterator_<isConst>::operator++() {
+    ruleId_++;
+    if (ruleId_ >= (*ptr_)[charId_].size()) {
+        ruleId_ = 0;
+        ++charId_;
+        while (charId_ < maxCharId && (*ptr_)[charId_].empty()) {
+            ++charId_;
+        }
+    }
+    return *this;
+}
+
+template<bool isConst>
+Grammar::Iterator_<isConst>& Grammar::Iterator_<isConst>::operator--() {
+    if (ruleId_ <= 0) {
+        --charId_;
+        while (charId_ >= 0 && (*ptr_)[charId_].empty()) {
+            --charId_;
+        }
+        if (charId_ >= 0) {
+            ruleId_ = (*ptr_)[charId_].size();
+        }
+    } else {
+        ruleId_ = 0;
+    }
+    --ruleId_;
+    return *this;
+}
+
+template<bool isConst>
+typename Grammar::Iterator_<isConst>::reference Grammar::Iterator_<isConst>::operator*() {
+    return (*ptr_)[charId_][ruleId_];
+}
+
+template<bool isConst>
+typename Grammar::Iterator_<isConst>::pointer Grammar::Iterator_<isConst>::operator->() {
+    return &((*ptr_)[charId_][ruleId_]);
+}
+
+template<bool isConst>
+bool Grammar::Iterator_<isConst>::operator==(const Iterator_ &other) const {
+    return ptr_ == other.ptr_ && charId_ == other.charId_ && ruleId_ == other.ruleId_;
+}
+
+template<bool isConst>
+bool Grammar::Iterator_<isConst>::operator!=(const Iterator_ &other) const {
+    return !(*this == other);
+}
+
+Grammar::Iterator Grammar::begin() {
+    Iterator res = Iterator(&rules_, 0, 0);
+    if (!res.isValid()) {
+        ++res;
+    }
+    return res;
+}
+
+Grammar::Iterator Grammar::end() {
+    return Iterator(&rules_, maxCharId, 0);
+}
+
+Grammar::ConstIterator Grammar::begin() const {
+    ConstIterator res(&rules_, 0, 0);
+    if (!res.isValid()) {
+        ++res;
+    }
+    return res;
+}
+
+Grammar::ConstIterator Grammar::end() const {
+    return ConstIterator(&rules_, maxCharId, 0);
+}
+
+Grammar::Iterator Grammar::begin(char c) {
+    int id = c - 'A';
+    return Iterator(&rules_, id, 0);
+}
+
+Grammar::Iterator Grammar::end(char c) {
+    Iterator res(&rules_, c - 'A', rules_[c - 'A'].size());
+    ++res;
+    return res;
+}
+
+Grammar::ConstIterator Grammar::begin(char c) const {
+    int id = c - 'A';
+    auto cur = &rules_;
+    return ConstIterator(cur, id, 0);
+}
+
+Grammar::ConstIterator Grammar::end(char c) const {
+    ConstIterator res(&rules_, c - 'A', rules_[c - 'A'].size());
+    ++res;
+    return res;
+}
+
+Grammar::Iterator Grammar::eraseRule(Iterator it) {
+    if (it.isValid()) {
+        Iterator nxt = it;
+        ++nxt;
+        auto del_it = rules_[it.charId_].begin() + it.ruleId_;
+        rules_[it.charId_].erase(del_it);
+        --size_;
+        return nxt;
+    }
+    return it;
 }

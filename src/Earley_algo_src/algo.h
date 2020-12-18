@@ -5,8 +5,11 @@
 #include "grammar_src/grammar.h"
 
 class EarleyAlgo {
+
+
     Grammar grammar_;
 public:
+    EarleyAlgo();
     EarleyAlgo(Grammar grammar);
 
 };
