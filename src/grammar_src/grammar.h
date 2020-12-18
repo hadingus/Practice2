@@ -4,18 +4,34 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <set>
 
-class Grammar {
-    int size_;
-    std::vector<std::string> rules_;
+class RuleVerifier {
 public:
+    static std::vector<std::string> parseRules(const std::string &rule);
     static bool isValidSingleRule(const std::string &rule);
     static bool isValidRule(const std::string &rule);
     static bool isNonTerminal(char c);
     static bool isSymbol(char c);
+};
 
-    Grammar(int size = 0);
+class Grammar {
+    char start_;
+    std::vector<std::string> rules_;
+public:
+    Grammar(char start = 'S');
+    Grammar(const Grammar &other);
+    Grammar(Grammar &&other);
+    Grammar& operator=(const Grammar &other);
+    Grammar& operator=(Grammar &&other);
 
+    void setStart(char newStart);
+    char getStart() const;
+    bool addRule(const std::string &rule);
+    unsigned int size() const;
+    void deleteSimilarRules();
+    std::string& operator[](int id);
+    const std::string& operator[](int id) const;
 };
 
 #endif

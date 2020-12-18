@@ -3,6 +3,6 @@
 #include "Earley_algo_src/algo.h"
 
 int main() {
-    std::cout << Grammar::isValidRule("T->aTaB|1|aBa|");
+    std::cout << RuleVerifier::isValidRule("T->aTaB|1|aBa|");
     return 0;
 }
