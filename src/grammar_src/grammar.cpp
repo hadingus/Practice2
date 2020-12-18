@@ -16,18 +16,24 @@ std::vector<std::string> parseRules(const std::string &rule) {
     std::string curRule = start;
     for (int i = 3; i < rule.size(); ++i) {
         if (rule[i] == '|') {
+            if (curRule.size() == 4 && curRule.back() == '1') {
+                curRule.pop_back();
+            }
             rulesArr.push_back(curRule);
             curRule = start;
         } else {
             curRule += rule[i];
         }
     }
+    if (curRule.size() == 4 && curRule.back() == '1') {
+        curRule.pop_back();
+    }
     rulesArr.push_back(curRule);
     return rulesArr;
 }
 
 bool isValidSingleRule(const std::string &rule) {
-    bool good = rule.size() > 3 && isNonTerminal(rule[0]) && rule[1] == '-' && rule[2] == '>';
+    bool good = rule.size() >= 3 && isNonTerminal(rule[0]) && rule[1] == '-' && rule[2] == '>';
     if (good && rule.size() == 4 && rule.back() == '1') {
         return true;
     }

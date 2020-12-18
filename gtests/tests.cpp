@@ -4,7 +4,7 @@
 TEST(RuleTest, parserTest) {
     auto q = parseRules("T->1|fkf|fEf");
     EXPECT_EQ(q.size(), 3);
-    std::vector<std::string> res = {"T->1", "T->fkf", "T->fEf"};
+    std::vector<std::string> res = {"T->", "T->fkf", "T->fEf"};
     int id = 0;
     for (const auto& it : q) {
         EXPECT_EQ(it, res[id++]);
@@ -28,7 +28,7 @@ TEST(RuleTest, SingleRuleTest) {
     ASSERT_FALSE(isValidSingleRule("agfeg"));
     ASSERT_FALSE(isValidSingleRule("Alffmv"));
     ASSERT_FALSE(isValidSingleRule("a->frefgf"));
-    ASSERT_FALSE(isValidSingleRule("A->"));
+    ASSERT_TRUE(isValidSingleRule("A->"));
     ASSERT_TRUE(isValidSingleRule("A->flkrk"));
     ASSERT_TRUE(isValidSingleRule("A->1"));
     ASSERT_FALSE(isValidSingleRule("A->1flgkmek"));
@@ -39,7 +39,7 @@ TEST(RuleTest, SingleRuleTest) {
 }
 
 TEST(RuleTest, RuleTest) {
-    ASSERT_FALSE(isValidRule("A->||"));
+    ASSERT_TRUE(isValidRule("A->||"));
     ASSERT_TRUE(isValidRule("A->1|efglr|1"));
     ASSERT_FALSE(isValidRule("a->fek"));
     ASSERT_TRUE(isValidRule("A->fgF|fl|1"));
@@ -111,5 +111,16 @@ TEST(GrammarTest, iteratorTest) {
     }
     EXPECT_EQ(id, 5);
     auto it = g.begin();
-    EXPECT_EQ(*it, "A->1");
+    EXPECT_EQ(*it, "A->");
+}
+
+TEST(GrammarTest, eraseTest) {
+    Grammar g;
+    g.addRule("T->g|1|gfdF");
+    g.addRule("A->1");
+    g.addRule("Z->1");
+    g.eraseRule(g.begin('T'));
+    EXPECT_EQ(g.size(), 4);
+    g.eraseRule(g.begin('G'));
+    EXPECT_EQ(g.size(), 4);
 }

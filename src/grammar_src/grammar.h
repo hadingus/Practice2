@@ -13,7 +13,7 @@ bool isNonTerminal(char c);
 bool isSymbol(char c);
 
 class Grammar {
-    static const int maxCharId = 26;
+    static const int maxCharId = 27;
     int size_;
     char start_;
     std::vector<std::vector<std::string>> rules_;
