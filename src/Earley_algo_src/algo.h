@@ -2,7 +2,13 @@
 #define EARLEY_ALGO_H
 
 #include <iostream>
+#include "grammar_src/grammar.h"
 
-void ff();
+class EarleyAlgo {
+    Grammar grammar_;
+public:
+    EarleyAlgo(Grammar grammar);
+
+};
 
 #endif

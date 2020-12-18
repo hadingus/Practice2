@@ -33,4 +33,7 @@ public:
     const std::string& operator[](int id) const;
 };
 
+std::ostream& operator <<(std::ostream &stream, const Grammar &g);
+std::istream& operator >>(std::istream& stream, Grammar &g);
+
 #endif

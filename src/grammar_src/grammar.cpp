@@ -104,3 +104,26 @@ char Grammar::getStart() const {
     return start_;
 }
 
+std::ostream& operator <<(std::ostream &stream, const Grammar &g) {
+    int sz = g.size();
+    stream << sz << "\n";
+    for (int i = 0; i < sz; ++i) {
+        if (i + 1 != sz) {
+            stream << g[i] << "\n";
+        } else {
+            stream << g[i];
+        }
+    }
+    return stream;
+}
+
+std::istream& operator >>(std::istream& stream, Grammar &g) {
+    int sz;
+    stream >> sz;
+    std::string rule;
+    for (int i = 0; i < sz; ++i) {
+        stream >> rule;
+        g.addRule(rule);
+    }
+    return stream;
+}

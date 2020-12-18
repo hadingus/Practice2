@@ -3,6 +3,9 @@
 #include "Earley_algo_src/algo.h"
 
 int main() {
-    std::cout << RuleVerifier::isValidRule("T->aTaB|1|aBa|");
+    Grammar g;
+    std::cin >> g;
+    g.deleteSimilarRules();
+    std::cout << g;
     return 0;
 }
