@@ -4,6 +4,9 @@
 #include "grammar_src/grammar.cpp"
 #include "Earley_algo_src/algo.cpp"
 #include <stack>
+#include <fstream>
+#include <fcntl.h>
+
 
 std::mt19937 rnd;
 
@@ -167,7 +170,23 @@ TEST(GrammarTest, constIterTest) {
     for (auto it = s.begin('A'); it != s.end('A'); ++it) {
         ++id;
     }
+    EXPECT_EQ(s.begin('G'), s.end('G'));
     EXPECT_EQ(id, 2);
+}
+
+TEST(GrammarTest, inputOutputTest) {
+    int fd = open("tmp", O_WRONLY | O_CREAT, 0640);
+    char str[] = "2\nS->As|aS|1\nA->sSA|s\n";
+    write(fd, str, sizeof(str));
+    close(fd);
+    std::ifstream istream("tmp");
+    Grammar g;
+    istream >> g;
+    EXPECT_EQ(g.size(), 5);
+    EXPECT_EQ(g.size('A'), 2);
+    std::ofstream ostream("tmp");
+    ostream << g;
+    remove("tmp");
 }
 
 bool isPsP(const std::string &s) {
