@@ -95,3 +95,21 @@ TEST(GrammarTest, deleterTest) {
     EXPECT_EQ(g.size(), 4);
 }
 
+TEST(GrammarTest, iteratorTest) {
+    Grammar g;
+    g.addRule("T->g|1|gfdF");
+    g.addRule("A->1");
+    g.addRule("Z->1");
+    int id = 0;
+    for (auto it = g.begin('T'); it != g.end('T'); ++it) {
+        id++;
+    }
+    EXPECT_EQ(id, 3);
+    id = 0;
+    for (auto i : g) {
+        id++;
+    }
+    EXPECT_EQ(id, 5);
+    auto it = g.begin();
+    EXPECT_EQ(*it, "A->1");
+}
